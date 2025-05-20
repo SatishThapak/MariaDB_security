@@ -1,0 +1,18 @@
+# Run the Installation Command​
+
+sudo apt-get install mariadb-server​
+
+sudo mysql​
+SET PASSWORD FOR 'root'@'localhost' = PASSWORD(Qwerty@12345);​
+FLUSH PRIVILEGES;​
+
+​Step 1: Log in to MariaDB​
+mysql -u root -p​
+
+Step 2: List Databases​
+SHOW DATABASES;​
+
+Step 3: List Users​
+SELECT User, Host FROM mysql.user;​
+
+​
