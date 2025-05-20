@@ -1,0 +1,65 @@
+# Installing the Plugin's Package :​
+
+$ sudo apt-get install mariadb-server krb5-user libpam-krb5​
+$ sudo apt install mariadb-plugin-gssapi-client mariadb-plugin-gssapi-server​
+
+# ​Create service principle and export keytab file to the server: ​
+
+$ sudo kadmin.local -q "add_principal -randkey mariadb/localhost@EXAMPLE.COM" ​
+$ sudo kadmin.local -q "xst -kt /tmp/mariadb.keytab mariadb/localhost@EXAMPLE.COM"​
+$ sudo chmod a+r /tmp/*.keytab​
+
+Copy keytab file to the mariadb server ​
+Configuring the Service Principal Name & Path to the Keytab File ​
+
+$ sudo nano /etc/mysql/my.cnf  ​
+
+gssapi_keytab_path=/etc/mysql/mariadb.keytab​
+gssapi_principal_name=mariadb/localhost@EXAMPLE.COM
+plugin-load-add = auth_gssapi_client.so
+
+Now, time to restart the server ​
+
+$ sudo systemctl restart mariadb.service​
+$ sudo systemctl status mariadb.service
+
+
+Creating Users with gssapi​
+
+To create a user account via CREATE USER, specify the name of the plugin in the IDENTIFIED VIA clause. For example:​
+$ CREATE USER mysql@localhost IDENTIFIED VIA gssapi;​
+
+​If SQL_MODE does not have NO_AUTO_CREATE_USER set, then you can also create the user account via GRANT. For example:​
+$ GRANT SELECT ON db.* TO mysql@localhost IDENTIFIED VIA gssapi;​
+
+​You can also specify the user's realm for MariaDB with the USING clause. For example:​
+$ CREATE USER mysql IDENTIFIED VIA gssapi USING 'mysql@EXAMPLE.COM';​
+​
+If the realm is not provided in the user account's definition, then the realm is not used for comparison. Therefore, 'usr1@EXAMPLE.COM', 'usr1@EXAMPLE.CO.UK' and 'mymachine\usr1' would all identify as the following user account:​
+CREATE USER usr1@hostname IDENTIFIED VIA gssapi;
+
+Now test & try login using root user 
+Root user : mysql -u root –p  ​
+
+​GRANT ALL PRIVILEGES ON *.* TO 'mysql'@'localhost';​
+new user: Grant Read Permissions to the employee Database​
+
+CREATE USER 'Thapak'@'localhost' IDENTIFIED VIA gssapi;​
+GRANT ALL PRIVILEGES ON Employee_db.* TO 'Thapak'@'localhost';​
+FLUSH PRIVILEGES;​
+
+SHOW GRANTS FOR 'Thapak'@'localhost';​
+SELECT User, Host, Plugin FROM mysql.user WHERE User = 'mysql';​
+
++-------+-----------+--------+​
+
+| User  | Host      | Plugin |​
+
++-------+-----------+--------+​
+
+| mysql | localhost | gssapi |​
+
+| mysql | %         | gssapi |​
+
++-------+-----------+--------+​
+
